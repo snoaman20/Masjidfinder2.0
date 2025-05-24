@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Find Nearest Masjid/Musalla</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #e1f5fe);
+      text-align: center;
+      padding: 40px 20px;
+      color: #333;
+    }
+
+    .card {
+      background-color: #ffffff;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 1s ease;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 14px 28px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      background-color: #00796b;
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #004d40;
+      transform: translateY(-2px);
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 15px;
+      color: #00796b;
+    }
+
+    p {
+      font-size: 15px;
+      color: #555;
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+
+    #loader {
+      display: none;
+      margin: 20px auto;
+    }
+
+    iframe {
+      width: 100%;
+      height: 400px;
+      border: none;
+      border-radius: 12px;
+      margin-top: 25px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Find Nearest Masjid/Musalla Location</h2>
+    <p>Click below to share your live location and view nearby Masjids or Musallas on a map:</p>
+    <button onclick="getLocation()" aria-label="Get my location 📍">📍 Get My Location</button>
+    <p>Please allow location access when prompted. Your location is used only to center the map.</p>
+    <div id="loader">
+      <svg width="30" height="30" viewBox="0 0 50 50">
+        <circle cx="25" cy="25" r="20" fill="none" stroke="#00796b" stroke-width="4" stroke-linecap="round" stroke-dasharray="31.4 31.4" transform="rotate(0 25 25)">
+          <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+    </div>
+    <p id="status"></p>
+
+    <!-- Embedded custom map -->
+    <iframe 
+      src="https://www.google.com/maps/d/embed?mid=1rfTc8P2coL2PGeuW6mp2jc0O_djS3JE" 
+      allowfullscreen 
+      loading="lazy">
+    </iframe>
+  </div>
+
+  <script>
+    function getLocation() {
+      const loader = document.getElementById("loader");
+      const status = document.getElementById("status");
+
+      loader.style.display = "block";
+      status.innerText = "Fetching your location...";
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+      } else {
+        loader.style.display = "none";
+        status.innerText = "Geolocation is not supported by this browser.";
+      }
+    }
+
+    function showPosition(position) {
+      const loader = document.getElementById("loader");
+      const status = document.getElementById("status");
+
+      loader.style.display = "none";
+      status.innerText = "Location captured! Redirecting to map...";
+
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      // Search for masjids or musallas near the current location
+      const mapUrl = `https://www.google.com/maps/search/masjid/@${lat},${lon},15z`;
+
+      setTimeout(() => {
+        window.location.href = mapUrl;
+      }, 500);
+    }
+
+    function showError(error) {
+      document.getElementById("loader").style.display = "none";
+      document.getElementById("status").innerText = error.message || "Error fetching location.";
+    }
+  </script>
+</body>
+</html>
