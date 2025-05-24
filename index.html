@@ -92,9 +92,9 @@
     </div>
     <p id="status"></p>
 
-    <!-- Embedded custom map -->
-    <iframe 
-      src="https://www.google.com/maps/d/embed?mid=1rfTc8P2coL2PGeuW6mp2jc0O_djS3JE" 
+    <!-- Embedded map iframe -->
+    <iframe id="mapIframe" 
+      src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d48386.40179516757!2d-74.005941!3d40.712775!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1smasjid!5e0!3m2!1sen!2sus!4v1630000000000" 
       allowfullscreen 
       loading="lazy">
     </iframe>
@@ -104,39 +104,52 @@
     function getLocation() {
       const loader = document.getElementById("loader");
       const status = document.getElementById("status");
+      const mapIframe = document.getElementById("mapIframe");
 
       loader.style.display = "block";
       status.innerText = "Fetching your location...";
 
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
+        navigator.geolocation.getCurrentPosition(
+          (position) => showPosition(position, mapIframe, loader, status),
+          (error) => showError(error, loader, status)
+        );
       } else {
         loader.style.display = "none";
         status.innerText = "Geolocation is not supported by this browser.";
       }
     }
 
-    function showPosition(position) {
-      const loader = document.getElementById("loader");
-      const status = document.getElementById("status");
-
+    function showPosition(position, mapIframe, loader, status) {
       loader.style.display = "none";
-      status.innerText = "Location captured! Redirecting to map...";
+      status.innerText = "Location captured! Loading nearby masjids...";
 
       const lat = position.coords.latitude;
       const lon = position.coords.longitude;
 
-      // Search for masjids or musallas near the current location
-      const mapUrl = `https://www.google.com/maps/search/masjid/@${lat},${lon},15z`;
-
-      setTimeout(() => {
-        window.location.href = mapUrl;
-      }, 500);
+      // Update iframe source to center map on user's location and search for masjids/musallas
+      const mapUrl = `https://www.google.com/maps/embed/v1/search?key=AIzaSyD0X4vJqAb8t1o2c6u5v7D0zFpfV_Pg0Hc&q=masjid+near+${lat},${lon}&center=${lat},${lon}&zoom=14`;
+      mapIframe.src = mapUrl;
     }
 
-    function showError(error) {
-      document.getElementById("loader").style.display = "none";
-      document.getElementById("status").innerText = error.message || "Error fetching location.";
+    function showError(error, loader, status) {
+      loader.style.display = "none";
+      let errorMessage;
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          errorMessage = "Location access denied. Please allow location access to find nearby masjids.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          errorMessage = "Location information is unavailable.";
+          break;
+        case error.TIMEOUT:
+          errorMessage = "The request to get location timed out.";
+          break;
+        default:
+          errorMessage = "An unknown error occurred while fetching location.";
+          break;
+      }
+      status.innerText = errorMessage;
     }
   </script>
 </body>
